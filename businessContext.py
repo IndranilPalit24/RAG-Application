@@ -1,4 +1,7 @@
+# businessContext.py
+
 from transformers import pipeline
+from pineCone import model, index 
 
 # Load a pre-trained model for text classification
 classifier = pipeline("zero-shot-classification")
@@ -13,16 +16,26 @@ category_contexts = {
     "human resources": "This is the HR context, covering employee management, recruitment strategies, and talent retention."
 }
 
-def get_business_context(user_question):
-    # Check if the user input is empty or None
-    if not user_question.strip():
-        return "Please ask a valid business-related question."
+def store_embeddings_in_pinecone():
+    # Store business context embeddings into Pinecone
+    for category, context in category_contexts.items():
+        # Convert context into embeddings
+        embedding = model.encode(context).tolist()
+        
+        # Upsert to Pinecone (ID is the category name)
+        try:
+            index.upsert([(category, embedding, {"category": category, "context": context})])
+        except Exception as e:
+            print(f"Error upserting {category}: {str(e)}")
 
-    # Classify the user's question into one of the business categories
-    result = classifier(user_question, list(category_contexts.keys()))
-    
-    # Get the top predicted category
-    top_category = result['labels'][0]
-    
-    # Fetch the context directly from the dictionary
-    return category_contexts.get(top_category, "Enterprise RAG helps businesses retrieve augmented information for decision-making.")
+def query_pinecone_for_context(user_question):
+    """Query Pinecone for general business contexts based on user input"""
+    query_embedding = model.encode(user_question).tolist()
+    result = index.query(vector=query_embedding, top_k=5, include_metadata=True)
+    print(f"Query result: {result}")
+
+    if result['matches']:
+        print(f"Metadata: {result['matches'][0]['metadata']}")
+        return "Metadata displayed in console."
+    else:
+        return "No relevant context found."
