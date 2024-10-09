@@ -1,40 +1,38 @@
-# ragApplication.py
-
 from transformers import pipeline
 import streamlit as st
 from greetingHandler import check_greeting
-from businessContext import query_pinecone_for_context, store_embeddings_in_pinecone  # Import both
-from businessHandler import BusinessDataHandler  # Import the new class
+from businessContext import query_context_from_pinecone, store_business_context_embeddings  # Import both
+from businessHandler import BusinessDataHandler  # Import the BusinessDataHandler class
 
-# Store the embeddings into Pinecone before running the Streamlit app
-store_embeddings_in_pinecone()  # Store general business contexts
+# Store the predefined business context embeddings into Pinecone before running the Streamlit app
+store_business_context_embeddings()  # Store general business contexts
 
 # Initialize the business handler for mock data
-business_handler = BusinessDataHandler()
-business_handler.load_mock_data('D:\\RAGHackathon\\MOCK_DATA.csv')  # Load mock data from a CSV
-business_handler.embed_and_store_data()  # Embed and store mock data in Pinecone
+business_data_handler = BusinessDataHandler()
+business_data_handler.load_mock_data('D:\\RAGHackathon\\MOCK_DATA.csv')  # Load mock data from a CSV
+business_data_handler.embed_and_store_mock_data()  # Embed and store mock data in Pinecone
 
-# Load pre-trained model (like GPT-4)
-qa_model = pipeline("question-answering", model="deepset/roberta-base-squad2")
+# Load pre-trained model (like GPT-4) for question-answering
+question_answering_model = pipeline("question-answering", model="deepset/roberta-base-squad2")
 
 # Streamlit UI
-st.title("Enterprise RAG-powered Business Decision Assistant")
+st.title("NexQ - Enterprise RAG-powered Business Decision Assistant")
 
 # Input for user's question
-user_question = st.text_input("Ask a business-related question:")
+user_query = st.text_input("Ask a business-related question:")
 
-# Check for greeting
-response = check_greeting(user_question)
-if response:
-    st.write(response)
+# Check if the user input is a greeting
+greeting_response = check_greeting(user_query)
+if greeting_response:
+    st.write(greeting_response)
 else:
-    # Query Pinecone for the most relevant context based on the question
-    context = query_pinecone_for_context(user_question)
+    # Query Pinecone for the most relevant context based on the user query
+    context_response = query_context_from_pinecone(user_query)
     
     # Query mock data if needed
-    mockup_data_response = business_handler.query_data(user_question)
+    mock_data_response = business_data_handler.query_mock_data(user_query)
     
-    if user_question:
-        # Get the answer from the model using the retrieved context
-        result = qa_model(question=user_question, context=mockup_data_response)
-        st.write(f"Answer: {result['answer']}")
+    if user_query:
+        # Get the answer from the question-answering model using the retrieved context
+        answer = question_answering_model(question=user_query, context=mock_data_response)
+        st.write(f"Answer: {answer['answer']}")
