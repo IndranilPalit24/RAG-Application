@@ -1,13 +1,11 @@
 from transformers import pipeline
 import streamlit as st
-from UIHandler import display_ui  # Import UIHandler for UI management
+from UIHandler import display_ui, display_title, display_action_buttons  # Import necessary functions
 from greetingHandler import check_greeting
-from businessContext import query_context_from_pinecone, store_business_context_embeddings
 from businessHandler import BusinessDataHandler
 from dataAnalyze import SalesDataHandler
-import threading
-import time
-import re
+from businessContext import store_business_context_embeddings 
+
 
 # Load local CSS for styling
 def local_css(file_name):
@@ -27,68 +25,60 @@ sales_handler = SalesDataHandler('sales_data_sample.csv')
 # Load pre-trained model for question answering
 qa_model = pipeline("question-answering", model="deepset/roberta-base-squad2")
 
-# Define a function to load the mock data in a separate thread
-def load_data_in_background(business_handler):
+# Function to load the mock data
+def load_mock_data():
     try:
         print("Loading mock data...")
         business_handler.load_mock_data('D:\\RAGHackathon\\sales_data_sample.csv')  # Load mock data from a CSV
         print("Mock data loaded.")
         business_handler.embed_and_store_mock_data()  # Embed and store mock data in Pinecone
         print("Mock data embedded and uploaded to Pinecone!")
-        st.session_state['data_loaded'] = True
-        print("Data Loaded Successfully")
-        st.rerun()  # Rerun the Streamlit app to reflect the change
+        st.session_state['data_loaded'] = True  # Mark data as loaded
     except Exception as e:
         print(f"Error during data loading: {e}")
         st.session_state['data_loaded'] = False
 
-
-# Initialize session state for loading status
+# Initialize session state for loading status, conversation, and widget counter if not already set
 if 'data_loaded' not in st.session_state:
-    business_handler.load_mock_data('sales_data_sample.csv')
     st.session_state['data_loaded'] = False
+    load_mock_data()  # Load the data directly without threading
 
-user_question = display_ui(st.session_state['conversation'])
-
-# Start loading the data and refresh the UI
-if not st.session_state['data_loaded']:
-    load_data_in_background(business_handler)
-    st.write("Data loaded! Refreshing...")
-    time.sleep(1)  # Wait for a second to allow data loading
-    st.rerun()  # Trigger rerun
-
-# Initialize session state for conversation history if not already initialized
 if 'conversation' not in st.session_state:
     st.session_state['conversation'] = []
 
-# Start loading the data in the background if not already loaded
+# Initialize the widget counter in session state
+if 'widget_counter' not in st.session_state:
+    st.session_state['widget_counter'] = 0
+
+# Display the title and introductory message
+display_title()
+
+# Check if data is loaded
 if not st.session_state['data_loaded']:
-    if 'thread_started' not in st.session_state:
-        st.session_state['thread_started'] = True
-        threading.Thread(target=load_data_in_background, args=(business_handler,)).start()
+    # Display loading message
     st.write("Loading data, please wait...")
 
-# Once the data is loaded, show the main interface
-if st.session_state['data_loaded']:
-    # Display the UI and get the user input
-    user_question = display_ui(st.session_state['conversation'])
+else:
+    # Once data is loaded, display the conversation and input box
+    st.session_state['widget_counter'] += 1  # Increment widget counter before calling display_ui
+    user_question = display_ui(st.session_state['conversation'], unique_key=f"user_input_{st.session_state['widget_counter']}")
 
-    # Handling user input
     if user_question:
-        # Add user question to chat history
-        st.session_state['conversation'].append(("user", user_question))
-        bot_response = handle_user_question(user_question)
-    if bot_response:
-        st.session_state['conversation'].append(("system", bot_response))
-        
+        # Check for greeting first
+        greeting_response = check_greeting(user_question)
+        if greeting_response:
+            # Append the greeting response to the conversation
+            st.session_state['conversation'].append(("system", greeting_response))
+        else:
+            # If not a greeting, process it as a normal question
+            st.session_state['conversation'].append(("user", user_question))
 
         # Clear input after submission and display the updated conversation
         st.session_state['user_input'] = ""
 
-        # Display the updated conversation
-        display_ui(st.session_state['conversation'])
+        # Increment widget counter and display the conversation again
+        st.session_state['widget_counter'] += 1  
+        display_ui(st.session_state['conversation'], unique_key=f"conversation_display_{st.session_state['widget_counter']}")
 
-        # Clear the text box on refresh
-        if st.button("Refresh"):
-            st.session_state['conversation'] = []
-            st.rerun()
+# Call the function to display buttons
+display_action_buttons(st.session_state)

@@ -2,7 +2,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
-import re
 
 class SalesDataHandler:
     def __init__(self, file_path):
