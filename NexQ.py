@@ -32,7 +32,7 @@ qa_model = pipeline("question-answering", model="deepset/roberta-base-squad2")
 def load_mock_data():
     try:
         print("Loading mock data...")
-        business_handler.load_mock_data('D:\\RAGHackathon\\sales_data_sample.csv')  # Load mock data from a CSV
+        business_handler.load_mock_data('Data/sales_data_sample.csv')  # Load mock data from a CSV
         print("Mock data loaded.")
         business_handler.embed_and_store_mock_data()  # Embed and store mock data in Pinecone
         print("Mock data embedded and uploaded to Pinecone!")
