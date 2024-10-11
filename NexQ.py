@@ -23,8 +23,8 @@ business_handler = BusinessDataHandler()
 sales_handler = SalesDataHandler('sales_data_sample.csv')
 
 # Initialize QueryHandler to manage business-related data queries
-query_handler = QueryHandler('*\\sales_data_sample.csv')  # Path to your mock data
-
+query_handler = QueryHandler('data/sales_data_sample.csv') # Path to your mock data
+                                                              
 # Load pre-trained model for question answering
 qa_model = pipeline("question-answering", model="deepset/roberta-base-squad2")
 
