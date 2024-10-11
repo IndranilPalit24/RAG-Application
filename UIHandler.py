@@ -18,7 +18,7 @@ def display_ui(chat_history, unique_key):
     #send_button_clicked = st.button("Send", key=f"send_button_{unique_key}")
 
     # Return both user input and the status of the send button click
-    #return user_input if send_button_clicked else None
+    return user_input
 
 def display_title():
     """Displays the title of the application."""

@@ -5,7 +5,7 @@ from greetingHandler import check_greeting
 from businessHandler import BusinessDataHandler
 from dataAnalyze import SalesDataHandler
 from businessContext import store_business_context_embeddings 
-
+from queryHandler import QueryHandler
 
 # Load local CSS for styling
 def local_css(file_name):
@@ -21,6 +21,9 @@ store_business_context_embeddings()
 # Initialize the business and sales handlers
 business_handler = BusinessDataHandler()
 sales_handler = SalesDataHandler('sales_data_sample.csv')
+
+# Initialize QueryHandler to manage business-related data queries
+query_handler = QueryHandler('D:\\RAGHackathon\\sales_data_sample.csv')  # Path to your mock data
 
 # Load pre-trained model for question answering
 qa_model = pipeline("question-answering", model="deepset/roberta-base-squad2")
@@ -70,8 +73,24 @@ else:
             # Append the greeting response to the conversation
             st.session_state['conversation'].append(("system", greeting_response))
         else:
-            # If not a greeting, process it as a normal question
-            st.session_state['conversation'].append(("user", user_question))
+            # Handle specific queries for sales and finance using QueryHandler
+            if "sales growth" in user_question.lower():
+                # Example: extracting data from Q1 to Q2
+                sales_growth = query_handler.get_sales_growth('Q1', 'Q2')
+                st.session_state['conversation'].append(("system", sales_growth))
+
+            elif "sales for q1" in user_question.lower():
+                # Example: getting sales data for Q1
+                sales_for_q1 = query_handler.get_sales_for_quarter('Q1')
+                st.session_state['conversation'].append(("system", sales_for_q1))
+
+            elif "finance" in user_question.lower():
+                # Example: fetching finance data
+                finance_data = query_handler.get_finance_overview()
+                st.session_state['conversation'].append(("system", finance_data))
+            else:
+                # Handle other non-sales, non-finance queries
+                st.session_state['conversation'].append(("user", user_question))
 
         # Clear input after submission and display the updated conversation
         st.session_state['user_input'] = ""
