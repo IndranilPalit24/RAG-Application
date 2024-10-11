@@ -22,7 +22,7 @@ def display_ui(chat_history, unique_key):
 
 def display_title():
     """Displays the title of the application."""
-    st.write("## NexQ - Enterprise RAG-powered Business Decision Assistant")  # Keep the title in a separate function
+    st.write("## NexQ - Revolutionizing Q and A in industry Domain")  # Keep the title in a separate function
 
 def display_action_buttons(session_state):
     """Display action-based buttons below the chat input."""
