@@ -19,7 +19,7 @@ Flask==3.0.3
 Werkzeug==3.0.4
 
 # Numpy - numerical operations
-numpy==2.0
+numpy==1.24.0
 
 # scikit-learn - used for additional data processing (if needed)
 scikit-learn==1.5.2
