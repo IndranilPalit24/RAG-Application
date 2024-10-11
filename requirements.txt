@@ -14,19 +14,8 @@ huggingface-hub==0.25.1
 pinecone-client==5.0.1
 pinecone-plugin-inference==1.1.0
 
-# Flask - if necessary for APIs
-Flask==3.0.3
-Werkzeug==3.0.4
-
 # Numpy - numerical operations
 numpy==1.24.0
 
-# scikit-learn - used for additional data processing (if needed)
-scikit-learn==1.5.2
-
-# tqdm - for progress bars (if needed in data/model processing)
-tqdm==4.66.5
-
 # Additional essential utilities
 requests==2.28.2
-python-pptx==1.0.2  # If generating PowerPoint presentations
