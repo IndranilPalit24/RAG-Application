@@ -1,5 +1,5 @@
 # Streamlit - for the UI
-streamlit==1.23.1
+streamlit==1.37.0
 
 # Pandas - for data handling
 pandas==1.5.2
